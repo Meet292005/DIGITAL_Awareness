@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: digital-awareness-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python backend/manage.py migrate && python backend/manage.py seed_content
+    startCommand: gunicorn --chdir backend config.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://digital-awareness.vercel.app,http://localhost:5173"
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "true"
