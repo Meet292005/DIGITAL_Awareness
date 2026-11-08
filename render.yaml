@@ -3,8 +3,8 @@ services:
     name: digital-awareness-backend
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python backend/manage.py migrate && python backend/manage.py seed_content
-    startCommand: gunicorn --chdir backend config.wsgi:application --bind 0.0.0.0:$PORT
+    buildCommand: pip install -r requirements.txt && python backend/manage.py collectstatic --noinput
+    startCommand: python backend/manage.py migrate && python backend/manage.py seed_content && gunicorn --chdir backend config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.8
@@ -17,6 +17,10 @@ services:
       - key: DJANGO_ALLOWED_HOSTS
         value: ".onrender.com,localhost,127.0.0.1"
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://digital-awareness.vercel.app,http://localhost:5173"
+        value: "https://digital-awareness-omega.vercel.app,https://digital-awareness-meet292005.vercel.app,https://digital-awareness.vercel.app,http://localhost:5173"
       - key: CORS_ALLOW_ALL_ORIGINS
         value: "true"
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: "Admin@123456"
