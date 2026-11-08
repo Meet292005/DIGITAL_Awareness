@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 
-import os
-from awareness.models import Achievement, LearningCategory, LearningModule, Lesson, User
+from awareness.models import Achievement, LearningCategory, LearningModule, Lesson
 
 
 CONTENT = [
@@ -172,21 +171,5 @@ class Command(BaseCommand):
         ]
         for slug, name, description, icon in badges:
             Achievement.objects.update_or_create(slug=slug, defaults={"name": name, "description": description, "icon": icon})
-
-        # Ensure default administrator exists on cloud deployments
-        admin_user = os.environ.get("ADMIN_USERNAME", "admin")
-        admin_pass = os.environ.get("ADMIN_PASSWORD", "Admin@123456")
-        admin_mail = os.environ.get("ADMIN_EMAIL", "admin@digiaware.local")
-        if not User.objects.filter(is_staff=True).exists():
-            u = User.objects.create(
-                username=admin_user,
-                email=admin_mail,
-                role=User.Role.ADMIN,
-                is_staff=True,
-                is_superuser=True
-            )
-            u.set_password(admin_pass)
-            u.save()
-            self.stdout.write(self.style.SUCCESS(f"Default admin user '{admin_user}' created with password '{admin_pass}'."))
 
         self.stdout.write(self.style.SUCCESS(f"Curriculum ready: {created_modules} modules and {created_lessons} lessons created."))

@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / ".env")
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-if not SECRET_KEY:
-    raise RuntimeError("Set DJANGO_SECRET_KEY in the project .env file before starting Django.")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get(
+    "SECRET_KEY", "django-insecure-build-fallback-key-for-collectstatic"
+)
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,.onrender.com").split(",") if host.strip()]
