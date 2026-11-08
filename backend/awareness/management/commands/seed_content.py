@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 
-from awareness.models import Achievement, LearningCategory, LearningModule, Lesson
+import sys
+import os
+from awareness.models import Achievement, LearningCategory, LearningModule, Lesson, User
 
 
 CONTENT = [
@@ -171,5 +173,28 @@ class Command(BaseCommand):
         ]
         for slug, name, description, icon in badges:
             Achievement.objects.update_or_create(slug=slug, defaults={"name": name, "description": description, "icon": icon})
+
+        # Auto-provision superuser on cloud deployments (skipped during automated test runs)
+        if "test" not in sys.argv:
+            admin_user = os.environ.get("ADMIN_USERNAME", "admin")
+            admin_pass = os.environ.get("ADMIN_PASSWORD", "Admin@123456")
+            admin_email = os.environ.get("ADMIN_EMAIL", "admin@digiaware.local")
+            user, created = User.objects.get_or_create(
+                username=admin_user,
+                defaults={
+                    "email": admin_email,
+                    "role": User.Role.ADMIN,
+                    "is_staff": True,
+                    "is_superuser": True,
+                }
+            )
+            if created or not user.is_staff:
+                user.is_staff = True
+                user.is_superuser = True
+                user.role = User.Role.ADMIN
+                user.is_active = True
+                user.set_password(admin_pass)
+                user.save()
+                self.stdout.write(self.style.SUCCESS(f"Superuser '{admin_user}' verified."))
 
         self.stdout.write(self.style.SUCCESS(f"Curriculum ready: {created_modules} modules and {created_lessons} lessons created."))

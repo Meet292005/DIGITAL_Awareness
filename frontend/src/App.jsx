@@ -14,6 +14,7 @@ import {
   CircleHelp,
   Clock3,
   Eye,
+  EyeOff,
   Flame,
   Fingerprint,
   Globe,
@@ -109,6 +110,7 @@ function Header() {
           <>
             {(user.is_staff || user.role === 'admin') ? (
               <>
+                <NavLink to="/dashboard" onClick={() => setOpen(false)}>Dashboard</NavLink>
                 <NavLink to="/admin" onClick={() => setOpen(false)}>Admin Console</NavLink>
                 <NavLink to="/profile" onClick={() => setOpen(false)}>Profile</NavLink>
               </>
@@ -567,6 +569,7 @@ function AuthPage({ register = false, resetRequest = false, resetCredentials = f
   const [error, setError] = useState(authError)
   const [notice, setNotice] = useState(location.state?.notice || '')
   const [busy, setBusy] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function submit(event) {
     event.preventDefault()
@@ -633,7 +636,25 @@ function AuthPage({ register = false, resetRequest = false, resetCredentials = f
             ) : resetCredentials ? (
               <label>
                 New password
-                <input name="password" type="password" placeholder="At least 8 characters" autoComplete="new-password" required minLength={8} />
+                <div className="password-input-wrap">
+                  <input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="At least 8 characters"
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </label>
             ) : (
               <>
@@ -667,14 +688,25 @@ function AuthPage({ register = false, resetRequest = false, resetCredentials = f
                 )}
                 <label>
                   Password
-                  <input
-                    name="password"
-                    type="password"
-                    placeholder="At least 8 characters"
-                    autoComplete={register ? 'new-password' : 'current-password'}
-                    required
-                    minLength={register ? 8 : 1}
-                  />
+                  <div className="password-input-wrap">
+                    <input
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="At least 8 characters"
+                      autoComplete={register ? 'new-password' : 'current-password'}
+                      required
+                      minLength={register ? 8 : 1}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </label>
               </>
             )}
@@ -720,9 +752,6 @@ function ProtectedRoute({ children, admin = false }) {
 
 function Dashboard() {
   const { user } = useAuth()
-  if (user?.is_staff || user?.role === 'admin') {
-    return <Navigate to="/admin" replace />
-  }
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 

@@ -47,6 +47,45 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 
+class SetupAdminView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return self._setup(request)
+
+    def post(self, request):
+        return self._setup(request)
+
+    def _setup(self, request):
+        import os
+        admin_user = os.environ.get("ADMIN_USERNAME", "admin")
+        admin_pass = os.environ.get("ADMIN_PASSWORD", "Admin@123456")
+        admin_email = os.environ.get("ADMIN_EMAIL", "admin@digiaware.local")
+
+        user, created = User.objects.get_or_create(
+            username=admin_user,
+            defaults={
+                "email": admin_email,
+                "role": User.Role.ADMIN,
+                "is_staff": True,
+                "is_superuser": True,
+            }
+        )
+        user.is_staff = True
+        user.is_superuser = True
+        user.role = User.Role.ADMIN
+        user.is_active = True
+        user.set_password(admin_pass)
+        user.save()
+
+        return Response({
+            "status": "success",
+            "message": f"Superuser '{admin_user}' is ready with full dashboard access.",
+            "username": admin_user,
+            "created": created,
+        })
+
+
 class TokenObtainPairViewWithThrottle(TokenObtainPairView):
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "login"

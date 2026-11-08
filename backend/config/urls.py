@@ -18,6 +18,7 @@ from awareness.views import (
     TokenObtainPairViewWithThrottle,
     ProfileView,
     RegisterView,
+    SetupAdminView,
 )
 
 router = DefaultRouter()
@@ -26,6 +27,7 @@ router.register("categories", CategoryViewSet, basename="category")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/auth/setup-admin/", SetupAdminView.as_view(), name="setup-admin"),
     path("api/auth/token/", TokenObtainPairViewWithThrottle.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/register/", RegisterView.as_view(), name="register"),
