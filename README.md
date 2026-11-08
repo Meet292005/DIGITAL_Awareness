@@ -2,6 +2,17 @@
 
 **Think Before You Click.** DigiAware is an interactive digital-awareness platform for practicing safer decisions around phishing, payments, privacy, social media, identity, and everyday browsing.
 
+---
+
+## 🚀 Live Deployments
+
+- **Frontend (Vercel Live Production)**: [https://digital-awareness-omega.vercel.app](https://digital-awareness-omega.vercel.app)
+  *(Mirror: [https://digital-awareness-meet292005.vercel.app](https://digital-awareness-meet292005.vercel.app))*
+- **Backend (Render 1-Click Blueprint Deploy)**: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Meet292005/DIGITAL_Awareness)
+  - Automatically provisions Python web service with `gunicorn`, runs migrations, and seeds the curriculum!
+
+---
+
 ## What is included
 
 - Responsive React, Vite, Tailwind CSS, Framer Motion-ready design system, and Lucide iconography.
