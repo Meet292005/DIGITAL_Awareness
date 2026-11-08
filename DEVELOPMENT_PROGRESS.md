@@ -13,7 +13,7 @@
 | 7 | Admin analytics and content/student management | Complete; analytics, student management, and module/category management verified |
 | 8 | Django REST API and PostgreSQL-ready models | Complete; migrations verified, 14 API tests passing |
 | 9 | Frontend/API integration | Complete; production build passing and live end-to-end flows verified |
-| 10 | QA, optimization, deployment preparation | Local development and verification complete; external deployment services documented |
+| 10 | QA, optimization, deployment preparation | Complete; live production on Vercel and 1-click Render blueprint configured |
 
 ## Implemented
 
