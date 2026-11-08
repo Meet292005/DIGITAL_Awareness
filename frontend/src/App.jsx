@@ -1430,21 +1430,44 @@ function Admin() {
               </div>
             </section>
 
-            <div className="admin-links">
-              <Link className="dash-card" to="/admin/modules">
-                <BookOpen />
-                <b>Manage learning modules</b>
-                <span>Create, update and publish content <ArrowRight size={16} /></span>
+            <div className="admin-quick-actions">
+              <Link className="admin-action-card" to="/admin/modules">
+                <div className="admin-action-icon admin-icon-cyan">
+                  <BookOpen size={22} />
+                </div>
+                <div className="admin-action-content">
+                  <h3>Manage Learning Modules</h3>
+                  <p>Create, update, reorganize, and publish cybersecurity curriculum content.</p>
+                </div>
+                <span className="admin-action-link">
+                  Open Module Manager <ArrowRight size={15} />
+                </span>
               </Link>
-              <Link className="dash-card" to="/admin/categories">
-                <BookOpen />
-                <b>Manage categories</b>
-                <span>Organize learning content <ArrowRight size={16} /></span>
+
+              <Link className="admin-action-card" to="/admin/categories">
+                <div className="admin-action-icon admin-icon-indigo">
+                  <Target size={22} />
+                </div>
+                <div className="admin-action-content">
+                  <h3>Manage Categories</h3>
+                  <p>Organize topics into logical cyber defense domains and security pillars.</p>
+                </div>
+                <span className="admin-action-link">
+                  Configure Categories <ArrowRight size={15} />
+                </span>
               </Link>
-              <Link className="dash-card" to="/admin/students">
-                <Users />
-                <b>Manage students</b>
-                <span>Review learner accounts <ArrowRight size={16} /></span>
+
+              <Link className="admin-action-card" to="/admin/students">
+                <div className="admin-action-icon admin-icon-emerald">
+                  <Users size={22} />
+                </div>
+                <div className="admin-action-content">
+                  <h3>Manage Students</h3>
+                  <p>Review learner records, track points, monitor streaks, and manage account statuses.</p>
+                </div>
+                <span className="admin-action-link">
+                  Student Directory <ArrowRight size={15} />
+                </span>
               </Link>
             </div>
           </>
