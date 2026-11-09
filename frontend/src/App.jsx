@@ -74,6 +74,12 @@ function Header() {
           ))}
         </nav>
         <div className="header-actions">
+          {user && (
+            <span className="nav-user">
+              <span className="pulse-dot" style={{ width: 6, height: 6 }} />
+              {user.first_name || user.username}
+            </span>
+          )}
           <Link className="button button-outline button-small" to="/dashboard">
             Learner view <ArrowRight size={14} />
           </Link>
@@ -1399,7 +1405,7 @@ function Admin() {
                   <span className="eyebrow">ALL LEARNERS</span>
                   <h2>Progress at a glance</h2>
                 </div>
-                <Link className="text-link" to="/admin/students">Manage accounts <ArrowRight size={15} /></Link>
+                <Link className="button button-outline button-small" to="/admin/students">Manage accounts <ArrowRight size={14} /></Link>
               </div>
               <div className="admin-roster-wrap">
                 <div className="admin-roster admin-roster-head">
@@ -1481,42 +1487,169 @@ function Admin() {
 
 function AdminList() {
   const [rows, setRows] = useState([])
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
   const [error, setError] = useState('')
+  const [busyId, setBusyId] = useState(null)
 
   useEffect(() => {
-    api('/admin/students/').then((payload) => setRows(listOf(payload))).catch((reason) => setError(reason.message))
+    api('/admin/students/')
+      .then((payload) => setRows(listOf(payload)))
+      .catch((reason) => setError(reason.message))
   }, [])
 
   async function toggle(item) {
+    setBusyId(item.id)
     try {
-      const updated = await api(`/admin/students/${item.id}/`, { method: 'PATCH', body: JSON.stringify({ is_active: !item.is_active }) })
-      setRows(rows.map((row) => (row.id === item.id ? updated : row)))
-    } catch (reason) { setError(reason.message) }
+      const updated = await api(`/admin/students/${item.id}/`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_active: !item.is_active }),
+      })
+      setRows((current) => current.map((row) => (row.id === item.id ? { ...row, ...updated } : row)))
+    } catch (reason) {
+      setError(reason.message)
+    } finally {
+      setBusyId(null)
+    }
   }
+
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) => {
+      const matchesSearch =
+        !search ||
+        (row.username || '').toLowerCase().includes(search.toLowerCase()) ||
+        (row.email || '').toLowerCase().includes(search.toLowerCase()) ||
+        (row.first_name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (row.last_name || '').toLowerCase().includes(search.toLowerCase())
+
+      const matchesStatus =
+        statusFilter === 'ALL' ||
+        (statusFilter === 'ACTIVE' && row.is_active) ||
+        (statusFilter === 'INACTIVE' && !row.is_active)
+
+      return matchesSearch && matchesStatus
+    })
+  }, [rows, search, statusFilter])
 
   return (
     <AppLayout>
       <main className="app-page">
         <div className="page-intro">
-          <span className="eyebrow">ADMINISTRATION</span>
+          <Link to="/admin" className="back-link">← Admin Overview</Link>
+          <span className="eyebrow"><Users size={14} /> LEARNER DIRECTORY & ACCESS CONTROL</span>
           <h1>Manage <span>students.</span></h1>
-          <p>Activate or suspend learner accounts across the platform.</p>
+          <p>Review enrolled learner accounts, track XP progression, and manage active platform permissions.</p>
         </div>
+
         {error && <div className="error-message">{error}</div>}
-        <div className="admin-table">
-          {rows.map((row) => (
-            <div className="admin-row" key={row.id}>
-              <div>
-                <b>{row.first_name} {row.last_name} (@{row.username})</b>
-                <small>{row.email}</small>
-              </div>
-              <button className="button button-outline button-small" onClick={() => toggle(row)}>
-                {row.is_active ? 'Suspend account' : 'Reactivate account'}
+
+        <div className="admin-controls-bar">
+          <div className="search-input-wrap">
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder="Search by name, username, or email…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button className="clear-search-btn" onClick={() => setSearch('')} aria-label="Clear search">
+                <X size={14} />
               </button>
-            </div>
-          ))}
-          {!error && !rows.length && <div className="empty-state">No students found.</div>}
+            )}
+          </div>
+
+          <div className="status-filter-pills">
+            {['ALL', 'ACTIVE', 'INACTIVE'].map((f) => (
+              <button
+                key={f}
+                className={`filter-pill ${statusFilter === f ? 'active' : ''}`}
+                onClick={() => setStatusFilter(f)}
+              >
+                {f === 'ALL' ? `All Accounts (${rows.length})` : f === 'ACTIVE' ? `Active (${rows.filter(r => r.is_active).length})` : `Suspended (${rows.filter(r => !r.is_active).length})`}
+              </button>
+            ))}
+          </div>
         </div>
+
+        <section className="dash-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="admin-roster-wrap">
+            <div className="admin-roster admin-roster-head">
+              <span>LEARNER</span>
+              <span>STATUS</span>
+              <span>LESSONS</span>
+              <span>POINTS</span>
+              <span>STREAK</span>
+              <span>LAST ACTIVE</span>
+              <span style={{ textAlign: 'right' }}>ACTION</span>
+            </div>
+
+            {filteredRows.map((student) => {
+              const fullName = [student.first_name, student.last_name].filter(Boolean).join(' ') || student.username
+              const initial = (student.first_name || student.username || 'U').slice(0, 1).toUpperCase()
+              return (
+                <div className="admin-roster" key={student.id}>
+                  <div className="admin-learner-profile">
+                    <span className="admin-avatar-circle">{initial}</span>
+                    <span className="admin-learner-name">
+                      <b>{fullName}</b>
+                      <small>@{student.username} · {student.email}</small>
+                    </span>
+                  </div>
+
+                  <span>
+                    <span className={`status-pill ${student.is_active ? 'status-pill-active' : 'status-pill-inactive'}`}>
+                      <i className={`status-dot ${student.is_active ? 'status-active' : ''}`} />
+                      {student.is_active ? 'Active' : 'Suspended'}
+                    </span>
+                  </span>
+
+                  <span>
+                    <b>{student.completed_lessons || 0}</b> <small style={{ color: 'var(--text-secondary)' }}>cleared</small>
+                  </span>
+
+                  <span>
+                    <span className="xp-badge"><b>{student.points || 0}</b> XP</span>
+                  </span>
+
+                  <span>
+                    <span className="streak-pill">
+                      <Flame size={13} style={{ color: '#f97316' }} /> {student.learning_streak || 0}d
+                    </span>
+                  </span>
+
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>
+                    {student.last_activity_date
+                      ? new Date(`${student.last_activity_date}T00:00:00`).toLocaleDateString()
+                      : '—'}
+                  </span>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <button
+                      className={`button button-small ${student.is_active ? 'button-danger-outline' : 'button-success-outline'}`}
+                      onClick={() => toggle(student)}
+                      disabled={busyId === student.id}
+                    >
+                      {busyId === student.id
+                        ? 'Updating…'
+                        : student.is_active
+                        ? 'Suspend'
+                        : 'Reactivate'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+
+            {!filteredRows.length && (
+              <div className="empty-state" style={{ padding: 40 }}>
+                {search || statusFilter !== 'ALL'
+                  ? 'No learners match your search criteria.'
+                  : 'No registered learners on the platform yet.'}
+              </div>
+            )}
+          </div>
+        </section>
       </main>
     </AppLayout>
   )
@@ -1527,6 +1660,9 @@ function AdminModules() {
   const [categories, setCategories] = useState([])
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     Promise.all([api('/modules/'), api('/categories/')])
@@ -1549,7 +1685,8 @@ function AdminModules() {
       const created = await api('/modules/', { method: 'POST', body: JSON.stringify(data) })
       setModulesList((current) => [...current, created])
       form.reset()
-      setNotice('Module created as a draft. Publish it when it is ready.')
+      setShowCreate(false)
+      setNotice('New module created as a draft. You can now publish it.')
     } catch (reason) { setError(reason.message) }
   }
 
@@ -1562,7 +1699,8 @@ function AdminModules() {
     try {
       const updated = await api(`/modules/${item.slug}/`, { method: 'PATCH', body: JSON.stringify(data) })
       setModulesList((current) => current.map((module) => (module.id === item.id ? updated : module)))
-      setNotice('Module details saved.')
+      setEditingId(null)
+      setNotice('Module details saved successfully.')
     } catch (reason) { setError(reason.message) }
   }
 
@@ -1570,6 +1708,7 @@ function AdminModules() {
     try {
       const updated = await api(`/modules/${item.slug}/`, { method: 'PATCH', body: JSON.stringify({ is_published: !item.is_published }) })
       setModulesList((current) => current.map((module) => (module.id === item.id ? updated : module)))
+      setNotice(`Module "${item.title}" is now ${updated.is_published ? 'published' : 'draft'}.`)
     } catch (reason) { setError(reason.message) }
   }
 
@@ -1578,84 +1717,178 @@ function AdminModules() {
     try {
       await api(`/modules/${item.slug}/`, { method: 'DELETE' })
       setModulesList((current) => current.filter((module) => module.id !== item.id))
+      setNotice(`Module "${item.title}" deleted.`)
     } catch (reason) { setError(reason.message) }
   }
+
+  const filteredModules = useMemo(() => {
+    return modulesList.filter((m) =>
+      !search ||
+      m.title.toLowerCase().includes(search.toLowerCase()) ||
+      (m.category_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      m.slug.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [modulesList, search])
 
   return (
     <AppLayout>
       <main className="app-page">
         <div className="page-intro">
-          <span className="eyebrow">ADMINISTRATION</span>
+          <Link to="/admin" className="back-link">← Admin Overview</Link>
+          <span className="eyebrow"><BookOpen size={14} /> CURRICULUM ARCHITECTURE</span>
           <h1>Manage <span>learning modules.</span></h1>
-          <p>Create, update, publish, and retire learning paths.</p>
+          <p>Create, update, organize, and publish cyber defense training modules.</p>
         </div>
+
         {error && <div className="error-message">{error}</div>}
         {notice && <div className="success-message">{notice}</div>}
-        <section className="dash-card admin-editor">
-          <h2>Create a learning module</h2>
-          <form className="auth-form" onSubmit={createModule}>
-            <label>Title<input name="title" required maxLength={180} /></label>
-            <label>URL slug<input name="slug" required maxLength={200} /></label>
-            <label>
-              Category
-              <select name="category" required defaultValue="">
-                {categories.map((category) => (
-                  <option value={category.id} key={category.id}>{category.name}</option>
-                ))}
-              </select>
-            </label>
-            <label>Description<textarea name="description" rows="3" required /></label>
-            <label>
-              Difficulty
-              <select name="difficulty" defaultValue="beginner">
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </label>
-            <label>Estimated minutes<input name="estimated_minutes" type="number" min="1" max="240" defaultValue="10" required /></label>
-            <button className="button button-primary">Create draft <ArrowRight size={15} /></button>
-          </form>
-        </section>
-        <div className="admin-table">
-          {modulesList.map((item) => (
-            <details className="admin-module" key={item.id}>
-              <summary>
-                <span><b>{item.title}</b><small>{item.category_name} · {item.is_published ? 'Published' : 'Draft'}</small></span>
-                <ChevronRight size={17} />
-              </summary>
-              <form className="auth-form" onSubmit={(event) => updateModule(event, item)}>
-                <label>Title<input name="title" defaultValue={item.title} required maxLength={180} /></label>
+
+        <div className="admin-controls-bar">
+          <div className="search-input-wrap">
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder="Search modules by title or category…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && <button className="clear-search-btn" onClick={() => setSearch('')} aria-label="Clear search"><X size={14} /></button>}
+          </div>
+
+          <button className="button button-primary" onClick={() => setShowCreate(!showCreate)}>
+            {showCreate ? 'Close Creator' : '+ Create Module'}
+          </button>
+        </div>
+
+        {showCreate && (
+          <section className="dash-card admin-editor-card" style={{ marginBottom: 28 }}>
+            <div className="dash-card-head">
+              <div>
+                <span className="eyebrow">NEW MODULE SPECIFICATION</span>
+                <h2>Create a Learning Module</h2>
+              </div>
+            </div>
+            <form className="auth-form" onSubmit={createModule}>
+              <div className="form-two-col">
+                <label>Title<input name="title" placeholder="e.g. Ransomware Defense Instincts" required maxLength={180} /></label>
+                <label>URL Slug<input name="slug" placeholder="e.g. ransomware-defense" required maxLength={200} /></label>
+              </div>
+              <div className="form-two-col">
                 <label>
                   Category
-                  <select name="category" defaultValue={item.category}>
-                    {categories.map((category) => (
-                      <option value={category.id} key={category.id}>{category.name}</option>
+                  <select name="category" required defaultValue="">
+                    <option value="" disabled>Select category…</option>
+                    {categories.map((c) => (
+                      <option value={c.id} key={c.id}>{c.name}</option>
                     ))}
                   </select>
                 </label>
-                <label>Description<textarea name="description" defaultValue={item.description} rows="3" required /></label>
                 <label>
                   Difficulty
-                  <select name="difficulty" defaultValue={item.difficulty}>
+                  <select name="difficulty" defaultValue="beginner">
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
                     <option value="advanced">Advanced</option>
                   </select>
                 </label>
-                <label>Estimated minutes<input name="estimated_minutes" type="number" min="1" max="240" defaultValue={item.estimated_minutes} required /></label>
-                <div className="admin-actions">
-                  <button className="button button-outline button-small">Save changes</button>
-                  <button type="button" className="button button-outline button-small" onClick={() => togglePublished(item)}>
-                    {item.is_published ? 'Unpublish' : 'Publish'}
-                  </button>
-                  <button type="button" className="button button-quiet button-small" onClick={() => deleteModule(item)}>Delete</button>
+              </div>
+              <label>Estimated Minutes<input name="estimated_minutes" type="number" min="1" max="240" defaultValue="10" required /></label>
+              <label>Description<textarea name="description" rows="3" placeholder="Brief overview of what students will practice in this module…" required /></label>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button className="button button-primary">Create Draft Module <ArrowRight size={15} /></button>
+                <button type="button" className="button button-quiet" onClick={() => setShowCreate(false)}>Cancel</button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        <div className="admin-module-list">
+          {filteredModules.map((item) => {
+            const isEditing = editingId === item.id
+            return (
+              <div className="admin-module-card" key={item.id}>
+                <div className="admin-module-card-header">
+                  <div className="admin-module-card-title-group">
+                    <span className="admin-module-icon-box">
+                      <BookOpen size={20} />
+                    </span>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                        <span className="module-category-pill">{item.category_name || 'GENERAL'}</span>
+                        <span className={`status-pill ${item.is_published ? 'status-pill-active' : 'status-pill-draft'}`}>
+                          {item.is_published ? '● Published' : '○ Draft'}
+                        </span>
+                        <span className="module-diff-pill">{item.difficulty?.toUpperCase()}</span>
+                      </div>
+                      <h3 style={{ margin: '4px 0 6px', fontSize: 16, color: '#f8fafc' }}>{item.title}</h3>
+                      <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>{item.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="admin-module-actions">
+                    <button
+                      className={`button button-small ${item.is_published ? 'button-quiet' : 'button-success-outline'}`}
+                      onClick={() => togglePublished(item)}
+                      title={item.is_published ? "Set to draft" : "Publish to students"}
+                    >
+                      {item.is_published ? 'Unpublish' : 'Publish'}
+                    </button>
+                    <button
+                      className="button button-outline button-small"
+                      onClick={() => setEditingId(isEditing ? null : item.id)}
+                    >
+                      {isEditing ? 'Close' : 'Edit'}
+                    </button>
+                    <button
+                      className="button button-danger-icon button-small"
+                      onClick={() => deleteModule(item)}
+                      title="Delete module"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
                 </div>
-                <small>To author lesson text and knowledge-check answers, use the <a href={`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace(/\/api\/?$/, '')}/admin/awareness/lesson/`} target="_blank" rel="noreferrer">Django lesson editor</a>.</small>
-              </form>
-            </details>
-          ))}
-          {modulesList.length === 0 && <div className="empty-state">No modules found. Add one above.</div>}
+
+                {isEditing && (
+                  <div className="admin-module-edit-drawer">
+                    <form className="auth-form" onSubmit={(event) => updateModule(event, item)}>
+                      <div className="form-two-col">
+                        <label>Title<input name="title" defaultValue={item.title} required maxLength={180} /></label>
+                        <label>
+                          Category
+                          <select name="category" defaultValue={item.category}>
+                            {categories.map((c) => (
+                              <option value={c.id} key={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                      <div className="form-two-col">
+                        <label>
+                          Difficulty
+                          <select name="difficulty" defaultValue={item.difficulty}>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                          </select>
+                        </label>
+                        <label>Estimated Minutes<input name="estimated_minutes" type="number" min="1" max="240" defaultValue={item.estimated_minutes} required /></label>
+                      </div>
+                      <label>Description<textarea name="description" defaultValue={item.description} rows="3" required /></label>
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <button className="button button-primary button-small">Save Changes</button>
+                        <button type="button" className="button button-quiet button-small" onClick={() => setEditingId(null)}>Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {!filteredModules.length && (
+            <div className="empty-state">No learning modules found matching your search.</div>
+          )}
         </div>
       </main>
     </AppLayout>
@@ -1666,6 +1899,8 @@ function AdminCategories() {
   const [categories, setCategories] = useState([])
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [showCreate, setShowCreate] = useState(false)
 
   useEffect(() => {
     api('/categories/').then((payload) => setCategories(listOf(payload))).catch((reason) => setError(reason.message))
@@ -1680,7 +1915,8 @@ function AdminCategories() {
       const created = await api('/categories/', { method: 'POST', body: JSON.stringify(data) })
       setCategories((current) => [...current, created])
       form.reset()
-      setError(''); setNotice('Category created.')
+      setShowCreate(false)
+      setError(''); setNotice(`Category "${created.name}" created successfully.`)
     } catch (reason) { setError(reason.message) }
   }
 
@@ -1690,16 +1926,17 @@ function AdminCategories() {
       const data = Object.fromEntries(new FormData(event.currentTarget))
       const updated = await api(`/categories/${category.id}/`, { method: 'PATCH', body: JSON.stringify(data) })
       setCategories((current) => current.map((item) => (item.id === category.id ? updated : item)))
-      setError(''); setNotice('Category updated.')
+      setEditingId(null)
+      setError(''); setNotice(`Category "${updated.name}" updated.`)
     } catch (reason) { setError(reason.message) }
   }
 
   async function deleteCategory(category) {
-    if (!window.confirm(`Delete category "${category.name}"? Categories assigned to modules cannot be deleted.`)) return
+    if (!window.confirm(`Delete category "${category.name}"? Categories assigned to active modules cannot be deleted.`)) return
     try {
       await api(`/categories/${category.id}/`, { method: 'DELETE' })
       setCategories((current) => current.filter((item) => item.id !== category.id))
-      setError(''); setNotice('Category deleted.')
+      setError(''); setNotice(`Category "${category.name}" deleted.`)
     } catch (reason) { setError(reason.message) }
   }
 
@@ -1707,39 +1944,90 @@ function AdminCategories() {
     <AppLayout>
       <main className="app-page">
         <div className="page-intro">
-          <span className="eyebrow">ADMINISTRATION</span>
+          <Link to="/admin" className="back-link">← Admin Overview</Link>
+          <span className="eyebrow"><Target size={14} /> DOMAIN TAXONOMY</span>
           <h1>Manage <span>categories.</span></h1>
-          <p>Organize learning modules by the digital safety topics they cover.</p>
+          <p>Organize learning modules by the digital safety pillars and threat vectors they cover.</p>
         </div>
+
         {error && <div className="error-message">{error}</div>}
         {notice && <div className="success-message">{notice}</div>}
-        <section className="dash-card admin-editor">
-          <h2>Create a category</h2>
-          <form className="auth-form" onSubmit={createCategory}>
-            <label>Name<input name="name" required maxLength={100} /></label>
-            <label>URL slug<input name="slug" required maxLength={110} /></label>
-            <label>Description<input name="description" maxLength={240} /></label>
-            <button className="button button-primary">Add category <ArrowRight size={15} /></button>
-          </form>
-        </section>
-        <div className="admin-table">
-          {categories.map((category) => (
-            <details className="admin-module" key={category.id}>
-              <summary>
-                <span><b>{category.name}</b><small>{category.slug}</small></span>
-                <ChevronRight size={17} />
-              </summary>
-              <form className="auth-form" onSubmit={(event) => saveCategory(event, category)}>
-                <label>Name<input name="name" defaultValue={category.name} required maxLength={100} /></label>
-                <label>URL slug<input name="slug" defaultValue={category.slug} required maxLength={110} /></label>
-                <label>Description<input name="description" defaultValue={category.description} maxLength={240} /></label>
-                <div className="admin-actions">
-                  <button className="button button-outline button-small">Save changes</button>
-                  <button type="button" className="button button-quiet button-small" onClick={() => deleteCategory(category)}>Delete</button>
+
+        <div className="admin-controls-bar">
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+            Showing <b>{categories.length}</b> threat categories
+          </span>
+          <button className="button button-primary" onClick={() => setShowCreate(!showCreate)}>
+            {showCreate ? 'Close Creator' : '+ Add Category'}
+          </button>
+        </div>
+
+        {showCreate && (
+          <section className="dash-card admin-editor-card" style={{ marginBottom: 28 }}>
+            <div className="dash-card-head">
+              <div>
+                <span className="eyebrow">NEW TAXONOMY NODE</span>
+                <h2>Add a Learning Category</h2>
+              </div>
+            </div>
+            <form className="auth-form" onSubmit={createCategory}>
+              <div className="form-two-col">
+                <label>Name<input name="name" placeholder="e.g. Cloud & Remote Security" required maxLength={100} /></label>
+                <label>URL Slug<input name="slug" placeholder="e.g. cloud-security" required maxLength={110} /></label>
+              </div>
+              <label>Description<input name="description" placeholder="Short description of this security category…" maxLength={240} /></label>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button className="button button-primary">Save Category <ArrowRight size={15} /></button>
+                <button type="button" className="button button-quiet" onClick={() => setShowCreate(false)}>Cancel</button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        <div className="admin-category-grid">
+          {categories.map((category) => {
+            const isEditing = editingId === category.id
+            return (
+              <div className="admin-category-card" key={category.id}>
+                <div className="admin-category-head">
+                  <span className="admin-category-icon">
+                    <Target size={20} />
+                  </span>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      className="button button-outline button-small"
+                      onClick={() => setEditingId(isEditing ? null : category.id)}
+                    >
+                      {isEditing ? 'Close' : 'Edit'}
+                    </button>
+                    <button
+                      className="button button-danger-icon button-small"
+                      onClick={() => deleteCategory(category)}
+                      title="Delete category"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
                 </div>
-              </form>
-            </details>
-          ))}
+
+                <h3>{category.name}</h3>
+                <span className="category-slug-badge">slug: {category.slug}</span>
+                <p>{category.description || 'No description provided.'}</p>
+
+                {isEditing && (
+                  <form className="auth-form" style={{ marginTop: 16 }} onSubmit={(event) => saveCategory(event, category)}>
+                    <label>Name<input name="name" defaultValue={category.name} required maxLength={100} /></label>
+                    <label>URL Slug<input name="slug" defaultValue={category.slug} required maxLength={110} /></label>
+                    <label>Description<input name="description" defaultValue={category.description} maxLength={240} /></label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="button button-primary button-small">Save</button>
+                      <button type="button" className="button button-quiet button-small" onClick={() => setEditingId(null)}>Cancel</button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )
+          })}
         </div>
       </main>
     </AppLayout>
