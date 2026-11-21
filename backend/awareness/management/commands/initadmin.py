@@ -23,4 +23,10 @@ class Command(BaseCommand):
             u.save()
             self.stdout.write(self.style.SUCCESS(f"Default admin user '{admin_user}' created successfully."))
         else:
-            self.stdout.write(f"Admin user '{admin_user}' already exists.")
+            u = User.objects.get(username=admin_user)
+            u.role = User.Role.ADMIN
+            u.is_staff = True
+            u.is_superuser = True
+            u.set_password(admin_pass)
+            u.save()
+            self.stdout.write(self.style.SUCCESS(f"Admin user '{admin_user}' credentials synced successfully."))

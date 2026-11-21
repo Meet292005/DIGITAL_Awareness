@@ -53,6 +53,7 @@ import RealisticSecurityCockpit from './components/RealisticSecurityCockpit'
 import RealisticScamInspector from './components/RealisticScamInspector'
 import RealisticPasswordAnalyzer from './components/RealisticPasswordAnalyzer'
 import RealisticCurriculumMap from './components/RealisticCurriculumMap'
+import CyberMonolith3D from './components/CyberMonolith3D'
 
 function SoundToggle() {
   const [muted, setMuted] = useState(cyberSound.isMuted())
@@ -137,23 +138,42 @@ function Header() {
   const userLinks = [
     ['Home', '/'],
     ['Learn', '/learn'],
+    ['Architecture', '/#layered-defense'],
     ['Cyber safety', '/cyber-safety'],
     ['Leaderboard', '/leaderboard'],
   ]
   return (
-    <header className="topbar">
+    <header className="topbar floating-topbar">
       <Link to="/" className="brand">
-        <span className="brand-mark"><Shield size={20} /></span>
-        <span>Digi<span className="brand-accent">Aware</span><small>THINK BEFORE YOU CLICK</small></span>
+        <span className="brand-mark brand-mark-emerald"><Shield size={19} /></span>
+        <span className="brand-title">Digi<span className="brand-accent">Aware</span></span>
+        <span className="brand-pill-tag">USE CASE</span>
       </Link>
       <button className="mobile-toggle icon-button" onClick={() => setOpen(!open)} aria-label="Toggle navigation">
         {open ? <X /> : <Menu />}
       </button>
       <nav className={open ? 'main-nav nav-open' : 'main-nav'}>
         {userLinks.map(([label, path]) => (
-          <NavLink key={path} to={path} onClick={() => setOpen(false)}>
-            {label}
-          </NavLink>
+          path.startsWith('/#') ? (
+            <a
+              key={path}
+              href={path}
+              onClick={(e) => {
+                setOpen(false)
+                if (location.pathname === '/') {
+                  e.preventDefault()
+                  const targetId = path.replace('/#', '')
+                  document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' })
+                }
+              }}
+            >
+              {label}
+            </a>
+          ) : (
+            <NavLink key={path} to={path} onClick={() => setOpen(false)}>
+              {label}
+            </NavLink>
+          )
         ))}
         {user && (
           <>
@@ -185,7 +205,9 @@ function Header() {
         ) : (
           <>
             <Link className="login-link" to="/login">Log in</Link>
-            <Link className="button button-primary button-small" to="/register">Get started <ArrowUpRight size={15} /></Link>
+            <Link className="button button-pill-emerald button-small" to="/register">
+              JOIN THE HUB <ArrowUpRight size={14} />
+            </Link>
           </>
         )}
       </div>
@@ -338,55 +360,180 @@ function Home() {
   return (
     <AppLayout>
       <main className="home-page">
-        {/* HERO SECTION */}
-        <section className="hero">
-          <div className="hero-copy">
-            <div className="eyebrow">
-              <span className="pulse-dot" /> NEXT-GEN CYBER DEFENSE & OPERATIONAL AWARENESS
-            </div>
-            <h1>
-              Think Before You Click.<br />
-              <span>Engineered on Live Threat Telemetry.</span>
-            </h1>
-            <p className="hero-subtitle">
-              Master authentic cyber defense reflexes against credential harvesters, QR payment traps, and social engineering exploits through high-fidelity interactive simulations.
-            </p>
-            <div className="hero-actions">
-              <Link className="button button-primary" to="/learn" onClick={() => cyberSound.playClick()}>
-                Start Tactical Training <ArrowRight size={17} />
-              </Link>
-              <Link className="button button-outline" to="/cyber-safety" onClick={() => cyberSound.playClick()}>
-                Defensive Handbook <ArrowUpRight size={16} />
-              </Link>
-            </div>
-            <div className="hero-proof">
-              <div className="avatar-stack">
-                <span><ShieldCheck size={15} /></span>
-                <span><Eye size={14} /></span>
-                <span><LockKeyhole size={13} /></span>
+        {/* CINEMATIC CYBER-MONOLITH HERO (MATCHING USER REFERENCE DESIGN) */}
+        <section className="monolith-hero-stage">
+          {/* Ambient Lighting Gradients */}
+          <div className="monolith-ambient-violet-left" />
+          <div className="monolith-ambient-violet-right" />
+          <div className="monolith-ambient-emerald-glow" />
+
+          <div className="monolith-hero-grid">
+            {/* Left Column: Bold Editorial Headline */}
+            <div className="monolith-hero-headline-col">
+              <div className="monolith-hero-badge">
+                <span className="pulse-dot-emerald" />
+                <span>CYBEREYE DEFENSIVE ARCHITECTURE</span>
               </div>
-              <div>
-                <strong>Zero boring lectures. Real scenario telemetry.</strong>
-                <p>Interactive simulations. Cognitive reflexes that protect your identity and finances.</p>
+              <h1 className="monolith-hero-title">
+                Cybersecurity<br />
+                That Performs<br />
+                <span className="monolith-title-glow">With You</span>
+              </h1>
+            </div>
+
+            {/* Center Column: 3D Obsidian Monolith with Laser Seam & Emerald Pedestal */}
+            <div className="monolith-hero-visual-col">
+              <CyberMonolith3D />
+              <div className="monolith-pedestal-blur" />
+            </div>
+
+            {/* Right Column: Narrative Copy & Actions */}
+            <div className="monolith-hero-copy-col">
+              <p className="monolith-hero-description">
+                Let's make cybersecurity a strength for your business and personal digital life. We're here to help with everything from risk management and compliance to training and continuous monitoring, ensuring your growth is always protected.
+              </p>
+              <div className="monolith-hero-actions">
+                <Link className="button button-emerald-glow" to="/learn" onClick={() => cyberSound.playClick()}>
+                  Start Tactical Training <ArrowRight size={16} />
+                </Link>
+                <Link className="button button-outline-frosted" to="/cyber-safety" onClick={() => cyberSound.playClick()}>
+                  Defensive Handbook <ArrowUpRight size={15} />
+                </Link>
+              </div>
+              <div className="monolith-metrics-strip">
+                <div className="monolith-metric">
+                  <span className="metric-val">99.98%</span>
+                  <span className="metric-lbl">Interception Rate</span>
+                </div>
+                <div className="monolith-metric-divider" />
+                <div className="monolith-metric">
+                  <span className="metric-val">&lt; 3m</span>
+                  <span className="metric-lbl">Micro Modules</span>
+                </div>
+                <div className="monolith-metric-divider" />
+                <div className="monolith-metric">
+                  <span className="metric-val">Zero</span>
+                  <span className="metric-lbl">Blast Radius</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* REALISTIC LIVE SECURITY COCKPIT */}
-          <motion.div
-            className="hero-interactive-stage"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
+          {/* Bottom Scroll Prompt (Matching Reference Image) */}
+          <a
+            href="#layered-defense"
+            className="monolith-scroll-explore"
+            onClick={(e) => {
+              e.preventDefault()
+              document.getElementById('layered-defense')?.scrollIntoView({ behavior: 'smooth' })
+            }}
           >
-            <RealisticSecurityCockpit />
-          </motion.div>
+            <span>SCROLL TO EXPLORE</span>
+            <div className="scroll-chevron-indicator">
+              <ChevronDown size={14} />
+            </div>
+          </a>
+        </section>
 
-          <div className="hero-scroll">
-            <ArrowDown size={15} /> SCROLL FOR DEFENSIVE LABORATORY
+        {/* LAYERED DEFENSE STRATEGY (EXACT SECTION FROM SCREENSHOT) */}
+        <section className="section layered-defense-section" id="layered-defense">
+          <div className="layered-defense-header">
+            <span className="eyebrow-emerald"><Shield size={14} /> ARCHITECTURAL FRAMEWORK</span>
+            <h2 className="layered-defense-heading">
+              Layered Defense<br /><span>Strategy</span>
+            </h2>
+            <p className="layered-defense-subheading">
+              A multi-tiered approach to cybersecurity that safeguards your digital perimeter, identity credentials, and transaction integrity with zero cognitive friction.
+            </p>
+          </div>
+
+          <div className="layered-defense-cards-grid">
+            <div className="layered-card">
+              <div className="layered-card-top">
+                <span className="layered-tier-badge">TIER 01</span>
+                <span className="layered-status-pill status-active">
+                  <span className="status-indicator-dot" /> ACTIVE SENSING
+                </span>
+              </div>
+              <div className="layered-card-icon">
+                <Globe size={24} />
+              </div>
+              <h3>Perimeter Intelligence</h3>
+              <p>Continuous inbound traffic heuristics, spoofed domain detection, and live threat telemetry filtering zero-day attacks before contact.</p>
+              <div className="layered-card-footer">
+                <span>Intercept Rate</span>
+                <strong>99.98%</strong>
+              </div>
+            </div>
+
+            <div className="layered-card">
+              <div className="layered-card-top">
+                <span className="layered-tier-badge">TIER 02</span>
+                <span className="layered-status-pill status-active">
+                  <span className="status-indicator-dot" /> ENCRYPTED
+                </span>
+              </div>
+              <div className="layered-card-icon">
+                <LockKeyhole size={24} />
+              </div>
+              <h3>Cryptographic Identity</h3>
+              <p>Hardware-backed multi-factor rings, biometric entropy evaluation, and passkey architecture stopping credential stuffing cold.</p>
+              <div className="layered-card-footer">
+                <span>Encryption Std</span>
+                <strong>AES-256 / ECC</strong>
+              </div>
+            </div>
+
+            <div className="layered-card">
+              <div className="layered-card-top">
+                <span className="layered-tier-badge">TIER 03</span>
+                <span className="layered-status-pill status-active">
+                  <span className="status-indicator-dot" /> DETONATING
+                </span>
+              </div>
+              <div className="layered-card-icon">
+                <Terminal size={24} />
+              </div>
+              <h3>Autonomous Simulation</h3>
+              <p>High-fidelity, air-gapped sandboxes replicating authentic phishing lures, rogue QR codes, and social engineering payloads safely.</p>
+              <div className="layered-card-footer">
+                <span>Containment</span>
+                <strong>Zero Blast Radius</strong>
+              </div>
+            </div>
+
+            <div className="layered-card">
+              <div className="layered-card-top">
+                <span className="layered-tier-badge">TIER 04</span>
+                <span className="layered-status-pill status-active">
+                  <span className="status-indicator-dot" /> HARDENED
+                </span>
+              </div>
+              <div className="layered-card-icon">
+                <ShieldCheck size={24} />
+              </div>
+              <h3>Reflex Hardening</h3>
+              <p>Instinctual cognitive conditioning that equips learners and employees to recognize urgency triggers and deceptive forms in seconds.</p>
+              <div className="layered-card-footer">
+                <span>Detection Speed</span>
+                <strong>&lt; 3 Seconds</strong>
+              </div>
+            </div>
           </div>
         </section>
 
+        {/* REALISTIC LIVE SECURITY COCKPIT (INTERACTIVE TELEMETRY) */}
+        <section className="section cockpit-section" id="labs">
+          <div className="section-heading" style={{ textAlign: 'center', justifyContent: 'center' }}>
+            <div>
+              <span className="eyebrow"><Activity size={14} /> LIVE THREAT TELEMETRY & OPERATIONS</span>
+              <h2>Real-time defensive posture.<br /><span>Interactive tactical overview and telemetry.</span></h2>
+            </div>
+          </div>
+          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
+            <RealisticSecurityCockpit />
+          </div>
+        </section>
         {/* TOPIC TICKER */}
         <div className="topic-ticker" aria-label="Explore digital safety topics">
           <div className="ticker-track">
