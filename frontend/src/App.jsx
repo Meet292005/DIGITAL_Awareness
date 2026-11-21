@@ -54,6 +54,7 @@ import RealisticScamInspector from './components/RealisticScamInspector'
 import RealisticPasswordAnalyzer from './components/RealisticPasswordAnalyzer'
 import RealisticCurriculumMap from './components/RealisticCurriculumMap'
 import CyberMonolith3D from './components/CyberMonolith3D'
+import ModuleTopicVisual from './components/ModuleTopicVisual'
 
 function SoundToggle() {
   const [muted, setMuted] = useState(cyberSound.isMuted())
@@ -91,7 +92,23 @@ function Header() {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const isAdminSection = location.pathname.startsWith('/admin')
+
+  const handleNavClick = (path, e) => {
+    setOpen(false)
+    cyberSound.playClick()
+    if (path.startsWith('/#')) {
+      e.preventDefault()
+      const targetId = path.replace('/#', '')
+      if (location.pathname === '/') {
+        const el = document.getElementById(targetId)
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+      } else {
+        navigate('/', { state: { scrollTo: targetId } })
+      }
+    }
+  }
 
   if (isAdminSection) {
     const adminLinks = [
@@ -101,37 +118,39 @@ function Header() {
       ['Students', '/admin/students'],
     ]
     return (
-      <header className="topbar">
-        <Link to="/admin" className="brand">
-          <span className="brand-mark"><Shield size={20} /></span>
-          <span>Digi<span className="brand-accent">Aware</span><small>ADMIN CONSOLE</small></span>
-        </Link>
-        <button className="mobile-toggle icon-button" onClick={() => setOpen(!open)} aria-label="Toggle navigation">
-          {open ? <X /> : <Menu />}
-        </button>
-        <nav className={open ? 'main-nav nav-open' : 'main-nav'}>
-          {adminLinks.map(([label, path]) => (
-            <NavLink key={path} to={path} end={path === '/admin'} onClick={() => setOpen(false)}>
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="header-actions">
-          <SoundToggle />
-          {user && (
-            <span className="nav-user">
-              <span className="pulse-dot" style={{ width: 6, height: 6 }} />
-              {user.first_name || user.username}
-            </span>
-          )}
-          <Link className="button button-outline button-small" to="/dashboard">
-            Learner view <ArrowRight size={14} />
+      <div className="floating-topbar-wrapper">
+        <header className="topbar floating-topbar">
+          <Link to="/admin" className="brand">
+            <span className="brand-mark"><Shield size={20} /></span>
+            <span>Digi<span className="brand-accent">Aware</span><small>ADMIN CONSOLE</small></span>
           </Link>
-          <button className="button button-quiet button-small" onClick={logout}>
-            Sign out
+          <button className="mobile-toggle icon-button" onClick={() => setOpen(!open)} aria-label="Toggle navigation">
+            {open ? <X /> : <Menu />}
           </button>
-        </div>
-      </header>
+          <nav className={open ? 'main-nav nav-open' : 'main-nav'}>
+            {adminLinks.map(([label, path]) => (
+              <NavLink key={path} to={path} end={path === '/admin'} onClick={() => setOpen(false)}>
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="header-actions">
+            <SoundToggle />
+            {user && (
+              <span className="nav-user">
+                <span className="pulse-dot" style={{ width: 6, height: 6 }} />
+                {user.first_name || user.username}
+              </span>
+            )}
+            <Link className="button button-outline button-small" to="/dashboard">
+              Learner view <ArrowRight size={14} />
+            </Link>
+            <button className="button button-quiet button-small" onClick={logout}>
+              Sign out
+            </button>
+          </div>
+        </header>
+      </div>
     )
   }
 
@@ -143,75 +162,100 @@ function Header() {
     ['Leaderboard', '/leaderboard'],
   ]
   return (
-    <header className="topbar floating-topbar">
-      <Link to="/" className="brand">
-        <span className="brand-mark brand-mark-emerald"><Shield size={19} /></span>
-        <span className="brand-title">Digi<span className="brand-accent">Aware</span></span>
-        <span className="brand-pill-tag">USE CASE</span>
-      </Link>
-      <button className="mobile-toggle icon-button" onClick={() => setOpen(!open)} aria-label="Toggle navigation">
-        {open ? <X /> : <Menu />}
-      </button>
-      <nav className={open ? 'main-nav nav-open' : 'main-nav'}>
-        {userLinks.map(([label, path]) => (
-          path.startsWith('/#') ? (
-            <a
-              key={path}
-              href={path}
-              onClick={(e) => {
-                setOpen(false)
-                if (location.pathname === '/') {
-                  e.preventDefault()
-                  const targetId = path.replace('/#', '')
-                  document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' })
-                }
-              }}
-            >
-              {label}
-            </a>
-          ) : (
-            <NavLink key={path} to={path} onClick={() => setOpen(false)}>
-              {label}
-            </NavLink>
-          )
-        ))}
-        {user && (
-          <>
-            {(user.is_staff || user.role === 'admin') ? (
-              <>
-                <NavLink to="/dashboard" onClick={() => setOpen(false)}>Dashboard</NavLink>
-                <NavLink to="/admin" onClick={() => setOpen(false)}>Admin Console</NavLink>
-                <NavLink to="/profile" onClick={() => setOpen(false)}>Profile</NavLink>
-              </>
+    <div className="floating-topbar-wrapper">
+      <header className="topbar floating-topbar">
+        <Link to="/" className="brand" onClick={() => { setOpen(false); cyberSound.playClick() }}>
+          <span className="brand-mark brand-mark-emerald"><Shield size={19} /></span>
+          <span className="brand-title">Digi<span className="brand-accent">Aware</span></span>
+          <span className="brand-pill-tag">USE CASE</span>
+        </Link>
+        <button
+          className="mobile-toggle icon-button"
+          onClick={() => { setOpen(!open); cyberSound.playClick() }}
+          aria-label="Toggle navigation"
+          aria-expanded={open}
+        >
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+        <nav className={open ? 'main-nav nav-open' : 'main-nav'}>
+          {userLinks.map(([label, path]) => (
+            path.startsWith('/#') ? (
+              <a
+                key={path}
+                href={path}
+                onClick={(e) => handleNavClick(path, e)}
+                className="nav-link-anchor"
+              >
+                {label}
+              </a>
             ) : (
-              <>
-                <NavLink to="/dashboard" onClick={() => setOpen(false)}>Dashboard</NavLink>
-                <NavLink to="/profile" onClick={() => setOpen(false)}>Profile</NavLink>
-              </>
+              <NavLink
+                key={path}
+                to={path}
+                end={path === '/'}
+                onClick={() => { setOpen(false); cyberSound.playClick() }}
+              >
+                {label}
+              </NavLink>
+            )
+          ))}
+          {user && (
+            <>
+              {(user.is_staff || user.role === 'admin') ? (
+                <>
+                  <NavLink to="/dashboard" onClick={() => setOpen(false)}>Dashboard</NavLink>
+                  <NavLink to="/admin" onClick={() => setOpen(false)}>Admin Console</NavLink>
+                  <NavLink to="/profile" onClick={() => setOpen(false)}>Profile</NavLink>
+                </>
+              ) : (
+                <>
+                  <NavLink to="/dashboard" onClick={() => setOpen(false)}>Dashboard</NavLink>
+                  <NavLink to="/profile" onClick={() => setOpen(false)}>Profile</NavLink>
+                </>
+              )}
+            </>
+          )}
+
+          {/* Mobile actions inside open menu */}
+          <div className="mobile-drawer-actions">
+            <SoundToggle />
+            {user ? (
+              <button className="button button-quiet button-small" onClick={() => { logout(); setOpen(false) }}>
+                Sign out
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: 10, width: '100%', marginTop: 8 }}>
+                <Link className="button button-outline button-small" to="/login" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center' }}>
+                  Log in
+                </Link>
+                <Link className="button button-pill-emerald button-small" to="/register" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: 'center' }}>
+                  Join the Hub ↗
+                </Link>
+              </div>
             )}
-          </>
-        )}
-      </nav>
-      <div className="header-actions">
-        <SoundToggle />
-        {user ? (
-          <>
-            <Link className="nav-user" to={user.is_staff ? "/admin" : "/dashboard"}>
-              <span className="pulse-dot" style={{ width: 6, height: 6 }} />
-              {user.first_name || user.username}
-            </Link>
-            <button className="button button-quiet button-small" onClick={logout}>Sign out</button>
-          </>
-        ) : (
-          <>
-            <Link className="login-link" to="/login">Log in</Link>
-            <Link className="button button-pill-emerald button-small" to="/register">
-              JOIN THE HUB <ArrowUpRight size={14} />
-            </Link>
-          </>
-        )}
-      </div>
-    </header>
+          </div>
+        </nav>
+        <div className="header-actions">
+          <SoundToggle />
+          {user ? (
+            <>
+              <Link className="nav-user" to={user.is_staff ? "/admin" : "/dashboard"}>
+                <span className="pulse-dot" style={{ width: 6, height: 6 }} />
+                {user.first_name || user.username}
+              </Link>
+              <button className="button button-quiet button-small" onClick={logout}>Sign out</button>
+            </>
+          ) : (
+            <>
+              <Link className="login-link" to="/login">Log in</Link>
+              <Link className="button button-pill-emerald button-small" to="/register">
+                JOIN THE HUB <ArrowUpRight size={14} />
+              </Link>
+            </>
+          )}
+        </div>
+      </header>
+    </div>
   )
 }
 
@@ -270,7 +314,17 @@ function AppLayout({ children }) {
 }
 
 function Home() {
+  const location = useLocation()
   const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const el = document.getElementById(location.state.scrollTo)
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 120)
+      }
+    }
+  }, [location.state])
   const [featured, setFeatured] = useState([])
   const [statsError, setStatsError] = useState('')
   const [selectedThreat, setSelectedThreat] = useState('phishing')
@@ -781,21 +835,35 @@ function Home() {
 }
 
 function ModuleCard({ item, index }) {
-  const icons = [MousePointer2, Eye, ShieldCheck]
-  const colors = ['blue', 'purple', 'green']
-  const Icon = icons[index % icons.length]
+  const categoryName = item.category_name || item.category?.name || 'DIGITAL SAFETY'
+  const estTime = item.estimated_minutes ? `${item.estimated_minutes} min` : (item.lessons?.length ? `${item.lessons.length} lesson` : '3 min')
+  const progressPercent = Math.min(94, 32 + (index % 5) * 15)
+
   return (
-    <Link className={`module-card card-${colors[index % colors.length]} card-laser-glow`} to={`/learn/${item.slug}`}>
-      <div className="module-card-top">
-        <span className="module-icon"><Icon size={20} /></span>
-        <span className="module-arrow"><ArrowUpRight size={17} /></span>
-      </div>
-      <span className="module-category">{item.category_name?.toUpperCase() || 'DIGITAL SAFETY'}</span>
-      <h3>{item.title}</h3>
-      <p>{item.description}</p>
-      <div className="module-meta">
-        <span><Clock3 size={14} /> {item.estimated_minutes} min</span>
-        <span>PATH {String(index + 1).padStart(2, '0')}</span>
+    <Link className="module-card-enhanced" to={`/learn/${item.slug}`} onClick={() => cyberSound.playClick()}>
+      {/* Topic-specific visual image illustration */}
+      <ModuleTopicVisual slug={item.slug} category={categoryName} title={item.title} />
+
+      {/* Card Content Body */}
+      <div className="module-card-body">
+        <div className="module-card-header-row">
+          <span className="module-category-badge">{categoryName}</span>
+          <span className="module-card-arrow"><ArrowUpRight size={16} /></span>
+        </div>
+
+        <h3 className="module-card-title">{item.title}</h3>
+        <p className="module-card-desc">{item.description}</p>
+
+        <div className="module-card-meta">
+          <div className="module-meta-pill">
+            <Clock3 size={13} /> {estTime}
+          </div>
+          <span className="module-difficulty-badge">{item.difficulty?.toUpperCase() || 'BEGINNER'}</span>
+        </div>
+
+        <div className="module-progress-track">
+          <div className="module-progress-fill" style={{ width: `${progressPercent}%` }} />
+        </div>
       </div>
     </Link>
   )
@@ -1250,22 +1318,7 @@ function Learn() {
         ) : filteredItems.length ? (
           <div className="module-grid">
             {filteredItems.map((item, index) => (
-              <Link className={`module-card card-${['blue', 'purple', 'green'][index % 3]}`} to={`/learn/${item.slug}`} key={item.id}>
-                <div className="module-card-top">
-                  <span className="module-icon"><BookOpen size={20} /></span>
-                  <span className="module-arrow"><ArrowUpRight size={17} /></span>
-                </div>
-                <span className="module-category">{item.category_name || item.category?.name || 'DIGITAL SAFETY'}</span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-                <div className="module-meta">
-                  <span><Clock3 size={14} /> {item.lessons?.length || 'Interactive'} lesson</span>
-                  <span>{item.difficulty?.toUpperCase() || 'ALL LEVELS'}</span>
-                </div>
-                <div className="module-progress">
-                  <span style={{ width: `${Math.min(92, 28 + index * 21)}%` }} />
-                </div>
-              </Link>
+              <ModuleCard item={item} index={index} key={item.id || item.slug} />
             ))}
           </div>
         ) : (
@@ -2697,12 +2750,22 @@ function LessonDetail() {
   )
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   const { user } = useAuth()
   const defaultAuthDestination = user?.is_staff ? '/admin' : '/dashboard'
 
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={user ? <Navigate to={defaultAuthDestination} replace /> : <AuthPage />} />
       <Route path="/register" element={user ? <Navigate to={defaultAuthDestination} replace /> : <AuthPage register />} />
@@ -2722,5 +2785,6 @@ export default function App() {
       <Route path="/admin/students" element={<ProtectedRoute admin><AdminList type="students" /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }

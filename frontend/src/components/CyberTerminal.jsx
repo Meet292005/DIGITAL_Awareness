@@ -18,10 +18,17 @@ export default function CyberTerminal() {
   ])
   const [input, setInput] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
-  const bottomRef = useRef(null)
+  const terminalBodyRef = useRef(null)
+  const isInitialMount = useRef(true)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    if (terminalBodyRef.current) {
+      terminalBodyRef.current.scrollTop = terminalBodyRef.current.scrollHeight
+    }
   }, [history])
 
   const executeCommand = (rawCmd) => {
@@ -169,7 +176,7 @@ export default function CyberTerminal() {
         ))}
       </div>
 
-      <div className="terminal-body" tabIndex={0} aria-label="Terminal output log">
+      <div className="terminal-body" ref={terminalBodyRef} tabIndex={0} aria-label="Terminal output log">
         {history.map((line, idx) => {
           let lineClass = 'terminal-line'
           if (line.type === 'user') lineClass += ' line-user'
@@ -192,7 +199,7 @@ export default function CyberTerminal() {
             <span className="terminal-spinner" /> Processing directive...
           </div>
         )}
-        <div ref={bottomRef} />
+
       </div>
 
       <form className="terminal-input-bar" onSubmit={handleSubmit}>
