@@ -49,6 +49,10 @@ import CyberGlobe3D from './components/CyberGlobe3D'
 import CyberScanner3D from './components/CyberScanner3D'
 import CyberTerminal from './components/CyberTerminal'
 import PhishInspector from './components/PhishInspector'
+import HeroAvatarSimulator from './components/HeroAvatarSimulator'
+import ScamSpotter from './components/ScamSpotter'
+import PasswordFortress from './components/PasswordFortress'
+import QuestProgression from './components/QuestProgression'
 
 function SoundToggle() {
   const [muted, setMuted] = useState(cyberSound.isMuted())
@@ -338,21 +342,21 @@ function Home() {
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="pulse-dot" /> THINK BEFORE YOU CLICK · CYBER DEFENSE PROTOCOL
+              <span className="pulse-dot" /> GAMIFIED CYBER ACADEMY · FOR KIDS & PARENTS
             </div>
             <h1>
-              Your digital world.<br />
-              <span>Your responsibility.</span>
+              Think Before You Click.<br />
+              <span>Level Up Your Cyber Armor.</span>
             </h1>
             <p className="hero-subtitle">
-              Think you can spot a scam? Prove it. Take quick, real-world missions that make you sharper, safer, and harder to fool online.
+              Can you outsmart internet tricksters? Complete fun, interactive missions, boost your Cyber Shield, and unlock real digital street smarts!
             </p>
             <div className="hero-actions">
-              <Link className="button button-primary" to="/learn">
-                Play your first mission <ArrowRight size={17} />
+              <Link className="tactile-btn tactile-boost-btn" style={{ width: 'auto' }} to="/learn" onClick={() => cyberSound.playClick()}>
+                Play First Quest 🚀
               </Link>
-              <Link className="button button-outline" to="/cyber-safety">
-                Get the safety cheat sheet <ArrowUpRight size={16} />
+              <Link className="tactile-btn tactile-secondary-btn" to="/cyber-safety" onClick={() => cyberSound.playClick()}>
+                Safety Guide 🛡️
               </Link>
             </div>
             <div className="hero-proof">
@@ -363,37 +367,23 @@ function Home() {
               </div>
               <div>
                 <strong>Real scenarios. Actual street smarts.</strong>
-                <p>Interactive 3D simulations. Skills that stick when it counts.</p>
+                <p>Interactive mini-games & quests. Skills that stick when it counts.</p>
               </div>
             </div>
           </div>
 
-          {/* 3D CYBER SHIELD HERO VISUAL */}
+          {/* INTERACTIVE HERO AVATAR & SHIELD SIMULATOR */}
           <motion.div
-            className="hero-3d-visual"
+            className="hero-interactive-stage"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
-            <div className="hero-3d-canvas-wrapper">
-              <CyberShield3D />
-            </div>
-            <div className="mission-stamp">
-              <Sparkles size={14} /> DIGITAL STREET SMARTS
-            </div>
-            <div className="float-card float-top">
-              <span className="float-icon float-blue"><Fingerprint size={17} /></span>
-              <span><b>Identity Shielding</b><small>Active defense enabled</small></span>
-              <Check className="float-check" size={15} />
-            </div>
-            <div className="float-card float-bottom">
-              <span className="float-icon float-purple"><Eye size={17} /></span>
-              <span><b>Catch Red Flags</b><small>Before you tap or enter OTP</small></span>
-            </div>
+            <HeroAvatarSimulator />
           </motion.div>
 
           <div className="hero-scroll">
-            <ArrowDown size={15} /> SCROLL FOR DEFENSE INTELLIGENCE
+            <ArrowDown size={15} /> SCROLL FOR CYBER DETECTIVE ACADEMY
           </div>
         </section>
 
@@ -454,6 +444,9 @@ function Home() {
           {statsError && <p className="error-message" role="status">{statsError}</p>}
         </section>
 
+        {/* QUEST / BADGE PROGRESSION ROADMAP */}
+        <QuestProgression />
+
         {/* FEATURED MODULES */}
         <section className="section modules-section">
           <div className="section-heading">
@@ -513,6 +506,23 @@ function Home() {
                 </div>
               )
             })}
+          </div>
+        </section>
+
+        {/* CYBER DETECTIVE ACADEMY (KIDS & PARENTS MINI-SIMULATORS) */}
+        <section className="section" style={{ maxWidth: 1280, margin: '80px auto 0', padding: '0 24px' }}>
+          <div className="section-heading" style={{ textAlign: 'center', justifyContent: 'center' }}>
+            <div>
+              <span className="eyebrow"><Search size={14} /> CYBER DETECTIVE ACADEMY</span>
+              <h2>Hands-on safety games.<br /><span>Fun for kids, trusted by parents.</span></h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 15, maxWidth: 640, margin: '10px auto 0' }}>
+                Practice real-world cyber detective instincts before browsing the web. Tap clues and test password strength with zero risk.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 28, alignItems: 'start' }}>
+            <ScamSpotter />
+            <PasswordFortress />
           </div>
         </section>
 
