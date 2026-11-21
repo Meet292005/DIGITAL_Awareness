@@ -53,7 +53,7 @@ import RealisticSecurityCockpit from './components/RealisticSecurityCockpit'
 import RealisticScamInspector from './components/RealisticScamInspector'
 import RealisticPasswordAnalyzer from './components/RealisticPasswordAnalyzer'
 import RealisticCurriculumMap from './components/RealisticCurriculumMap'
-import CyberMonolith3D from './components/CyberMonolith3D'
+import CyberBuilding3D from './components/CyberBuilding3D'
 import ModuleTopicVisual from './components/ModuleTopicVisual'
 
 function SoundToggle() {
@@ -426,7 +426,7 @@ function Home() {
             <div className="monolith-hero-headline-col">
               <div className="monolith-hero-badge">
                 <span className="pulse-dot-emerald" />
-                <span>CYBEREYE DEFENSIVE ARCHITECTURE</span>
+                <span>CYBER DEFENSE TOWER · 8-TIER LIVE RADAR</span>
               </div>
               <h1 className="monolith-hero-title">
                 Cybersecurity<br />
@@ -435,10 +435,9 @@ function Home() {
               </h1>
             </div>
 
-            {/* Center Column: 3D Obsidian Monolith with Laser Seam & Emerald Pedestal */}
-            <div className="monolith-hero-visual-col">
-              <CyberMonolith3D />
-              <div className="monolith-pedestal-blur" />
+            {/* Center Column: 3D 8-Story Cyber Defense Building with Road & Walking Citizens */}
+            <div className="monolith-hero-visual-col" style={{ minHeight: '520px' }}>
+              <CyberBuilding3D />
             </div>
 
             {/* Right Column: Narrative Copy & Actions */}
