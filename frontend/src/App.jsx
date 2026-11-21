@@ -49,10 +49,10 @@ import CyberGlobe3D from './components/CyberGlobe3D'
 import CyberScanner3D from './components/CyberScanner3D'
 import CyberTerminal from './components/CyberTerminal'
 import PhishInspector from './components/PhishInspector'
-import HeroAvatarSimulator from './components/HeroAvatarSimulator'
-import ScamSpotter from './components/ScamSpotter'
-import PasswordFortress from './components/PasswordFortress'
-import QuestProgression from './components/QuestProgression'
+import RealisticSecurityCockpit from './components/RealisticSecurityCockpit'
+import RealisticScamInspector from './components/RealisticScamInspector'
+import RealisticPasswordAnalyzer from './components/RealisticPasswordAnalyzer'
+import RealisticCurriculumMap from './components/RealisticCurriculumMap'
 
 function SoundToggle() {
   const [muted, setMuted] = useState(cyberSound.isMuted())
@@ -342,21 +342,21 @@ function Home() {
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="pulse-dot" /> GAMIFIED CYBER ACADEMY · FOR KIDS & PARENTS
+              <span className="pulse-dot" /> NEXT-GEN CYBER DEFENSE & OPERATIONAL AWARENESS
             </div>
             <h1>
               Think Before You Click.<br />
-              <span>Level Up Your Cyber Armor.</span>
+              <span>Engineered on Live Threat Telemetry.</span>
             </h1>
             <p className="hero-subtitle">
-              Can you outsmart internet tricksters? Complete fun, interactive missions, boost your Cyber Shield, and unlock real digital street smarts!
+              Master authentic cyber defense reflexes against credential harvesters, QR payment traps, and social engineering exploits through high-fidelity interactive simulations.
             </p>
             <div className="hero-actions">
-              <Link className="tactile-btn tactile-boost-btn" style={{ width: 'auto' }} to="/learn" onClick={() => cyberSound.playClick()}>
-                Play First Quest 🚀
+              <Link className="button button-primary" to="/learn" onClick={() => cyberSound.playClick()}>
+                Start Tactical Training <ArrowRight size={17} />
               </Link>
-              <Link className="tactile-btn tactile-secondary-btn" to="/cyber-safety" onClick={() => cyberSound.playClick()}>
-                Safety Guide 🛡️
+              <Link className="button button-outline" to="/cyber-safety" onClick={() => cyberSound.playClick()}>
+                Defensive Handbook <ArrowUpRight size={16} />
               </Link>
             </div>
             <div className="hero-proof">
@@ -366,24 +366,24 @@ function Home() {
                 <span><LockKeyhole size={13} /></span>
               </div>
               <div>
-                <strong>Real scenarios. Actual street smarts.</strong>
-                <p>Interactive mini-games & quests. Skills that stick when it counts.</p>
+                <strong>Zero boring lectures. Real scenario telemetry.</strong>
+                <p>Interactive simulations. Cognitive reflexes that protect your identity and finances.</p>
               </div>
             </div>
           </div>
 
-          {/* INTERACTIVE HERO AVATAR & SHIELD SIMULATOR */}
+          {/* REALISTIC LIVE SECURITY COCKPIT */}
           <motion.div
             className="hero-interactive-stage"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <HeroAvatarSimulator />
+            <RealisticSecurityCockpit />
           </motion.div>
 
           <div className="hero-scroll">
-            <ArrowDown size={15} /> SCROLL FOR CYBER DETECTIVE ACADEMY
+            <ArrowDown size={15} /> SCROLL FOR DEFENSIVE LABORATORY
           </div>
         </section>
 
@@ -445,7 +445,7 @@ function Home() {
         </section>
 
         {/* QUEST / BADGE PROGRESSION ROADMAP */}
-        <QuestProgression />
+        <RealisticCurriculumMap />
 
         {/* FEATURED MODULES */}
         <section className="section modules-section">
@@ -509,20 +509,20 @@ function Home() {
           </div>
         </section>
 
-        {/* CYBER DETECTIVE ACADEMY (KIDS & PARENTS MINI-SIMULATORS) */}
+        {/* INTERACTIVE THREAT LABORATORY (REALISTIC PHISHING & CRYPTOGRAPHY) */}
         <section className="section" style={{ maxWidth: 1280, margin: '80px auto 0', padding: '0 24px' }}>
           <div className="section-heading" style={{ textAlign: 'center', justifyContent: 'center' }}>
             <div>
-              <span className="eyebrow"><Search size={14} /> CYBER DETECTIVE ACADEMY</span>
-              <h2>Hands-on safety games.<br /><span>Fun for kids, trusted by parents.</span></h2>
+              <span className="eyebrow"><Search size={14} /> DEFENSIVE SECURITY LABORATORY</span>
+              <h2>Interactive threat dissection.<br /><span>Evaluate artifacts with zero risk.</span></h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: 15, maxWidth: 640, margin: '10px auto 0' }}>
-                Practice real-world cyber detective instincts before browsing the web. Tap clues and test password strength with zero risk.
+                Inspect real forensic indicators from active email attacks and evaluate passphrase resistance against multi-GPU brute-force clusters.
               </p>
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 28, alignItems: 'start' }}>
-            <ScamSpotter />
-            <PasswordFortress />
+            <RealisticScamInspector />
+            <RealisticPasswordAnalyzer />
           </div>
         </section>
 
