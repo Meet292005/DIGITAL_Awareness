@@ -30,19 +30,57 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  Terminal,
   Users,
+  Volume2,
+  VolumeX,
   X,
   Zap,
 } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api, listOf } from './api'
 import { useAuth } from './AuthContext'
+import { cyberSound } from './utils/cyberSound'
 import CyberBackground from './components/CyberBackground'
 import CyberShield3D from './components/CyberShield3D'
 import CyberPadlock3D from './components/CyberPadlock3D'
 import CyberTrophy3D from './components/CyberTrophy3D'
 import CyberGlobe3D from './components/CyberGlobe3D'
 import CyberScanner3D from './components/CyberScanner3D'
+import CyberTerminal from './components/CyberTerminal'
+import PhishInspector from './components/PhishInspector'
+
+function SoundToggle() {
+  const [muted, setMuted] = useState(cyberSound.isMuted())
+
+  const handleToggle = () => {
+    const nextMuted = cyberSound.toggleMute()
+    setMuted(nextMuted)
+    if (!nextMuted) {
+      cyberSound.playClick()
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      className={`sound-toggle-btn ${!muted ? 'sound-active' : ''}`}
+      onClick={handleToggle}
+      title={muted ? 'Enable Cyber Audio Effects' : 'Mute Cyber Audio Effects'}
+      aria-label={muted ? 'Enable Sound' : 'Mute Sound'}
+    >
+      {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+      {!muted && (
+        <span className="sound-waves" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+      )}
+      <span>{muted ? 'MUTED' : 'SFX ON'}</span>
+    </button>
+  )
+}
 
 function Header() {
   const { user, logout } = useAuth()
@@ -74,6 +112,7 @@ function Header() {
           ))}
         </nav>
         <div className="header-actions">
+          <SoundToggle />
           {user && (
             <span className="nav-user">
               <span className="pulse-dot" style={{ width: 6, height: 6 }} />
@@ -130,6 +169,7 @@ function Header() {
         )}
       </nav>
       <div className="header-actions">
+        <SoundToggle />
         {user ? (
           <>
             <Link className="nav-user" to={user.is_staff ? "/admin" : "/dashboard"}>
@@ -373,6 +413,26 @@ function Home() {
           </div>
         </div>
 
+        {/* DEFCON LIVE TELEMETRY STATUS BAR */}
+        <div style={{ padding: '0 24px', margin: '24px auto 0', maxWidth: 1280 }}>
+          <div className="defcon-bar">
+            <div className="defcon-badge">
+              <span className="defcon-pulse" />
+              <span>DEFCON 3 · ACTIVE TELEMETRY</span>
+            </div>
+            <div className="defcon-ticker-text">
+              <span>🔴 <strong>14,892+</strong> Phishing Attempts Intercepted Today</span>
+              <span>·</span>
+              <span>🛡️ <strong>Zero</strong> Credentials Leaked on Watch</span>
+              <span>·</span>
+              <span>⚡ <strong>Live:</strong> Rogue UPI QR Spoof Blocked in Mumbai</span>
+            </div>
+            <Link to="/cyber-safety" className="text-link" style={{ fontSize: 12, fontWeight: 700 }}>
+              Defensive Playbook <ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />
+            </Link>
+          </div>
+        </div>
+
         {/* STATS STRIP */}
         <section className="stats-strip">
           <div>
@@ -453,6 +513,23 @@ function Home() {
                 </div>
               )
             })}
+          </div>
+        </section>
+
+        {/* TACTICAL CYBER COMMAND CENTER (INTERACTIVE LAB) */}
+        <section className="section" style={{ maxWidth: 1280, margin: '80px auto 0', padding: '0 24px' }}>
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow"><Terminal size={14} /> ACTIVE DEFENSE LAB</span>
+              <h2>Interactive cyber sandbox.<br /><span>Test your reflexes in real time.</span></h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 15, maxWidth: 640, marginTop: 8 }}>
+                Execute tactical terminal commands and dissect deceptive links before you encounter them in the wild.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 28, alignItems: 'start' }}>
+            <CyberTerminal />
+            <PhishInspector />
           </div>
         </section>
 
@@ -551,7 +628,7 @@ function ModuleCard({ item, index }) {
   const colors = ['blue', 'purple', 'green']
   const Icon = icons[index % icons.length]
   return (
-    <Link className={`module-card card-${colors[index % colors.length]}`} to={`/learn/${item.slug}`}>
+    <Link className={`module-card card-${colors[index % colors.length]} card-laser-glow`} to={`/learn/${item.slug}`}>
       <div className="module-card-top">
         <span className="module-icon"><Icon size={20} /></span>
         <span className="module-arrow"><ArrowUpRight size={17} /></span>
@@ -664,6 +741,43 @@ function AuthPage({ register = false, resetRequest = false, resetCredentials = f
               </label>
             ) : (
               <>
+                {!register && !resetRequest && !resetCredentials && (
+                  <div className="auth-demo-chips">
+                    <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, alignSelf: 'center' }}>Quick Fill Demo:</span>
+                    <button
+                      type="button"
+                      className="auth-demo-chip"
+                      onClick={() => {
+                        cyberSound.playClick()
+                        const form = document.querySelector('.auth-form')
+                        if (form) {
+                          const u = form.querySelector('input[name="username"]')
+                          const p = form.querySelector('input[name="password"]')
+                          if (u) { u.value = 'admin'; u.dispatchEvent(new Event('input', { bubbles: true })) }
+                          if (p) { p.value = 'Admin@123456'; p.dispatchEvent(new Event('input', { bubbles: true })) }
+                        }
+                      }}
+                    >
+                      <ShieldCheck size={13} /> Admin
+                    </button>
+                    <button
+                      type="button"
+                      className="auth-demo-chip"
+                      onClick={() => {
+                        cyberSound.playClick()
+                        const form = document.querySelector('.auth-form')
+                        if (form) {
+                          const u = form.querySelector('input[name="username"]')
+                          const p = form.querySelector('input[name="password"]')
+                          if (u) { u.value = 'Meet29'; u.dispatchEvent(new Event('input', { bubbles: true })) }
+                          if (p) { p.value = 'Meet@123456'; p.dispatchEvent(new Event('input', { bubbles: true })) }
+                        }
+                      }}
+                    >
+                      <Users size={13} /> Student
+                    </button>
+                  </div>
+                )}
                 {register && (
                   <>
                     <label>
@@ -2120,10 +2234,12 @@ function LessonDetail() {
   }, [countdown, nextMission, navigate])
 
   function advanceMission(lesson, nextStage) {
+    cyberSound.playClick()
     setMissionStages((current) => ({ ...current, [lesson.id]: nextStage }))
   }
 
   function toggleClue(lesson, clue) {
+    cyberSound.playClick()
     setSelectedClues((current) => {
       const selected = current[lesson.id] || []
       return {
@@ -2137,10 +2253,12 @@ function LessonDetail() {
 
   async function complete(lesson) {
     try {
+      cyberSound.playClick()
       const lessonAnswers = lesson.questions.map((_, index) => answers[lesson.id]?.[index])
       const response = await api(`/lessons/${lesson.id}/complete/`, { method: 'POST', body: JSON.stringify({ answers: lessonAnswers }) })
       setResults((current) => ({ ...current, [lesson.id]: response }))
       if (response.passed) {
+        cyberSound.playFanfare()
         const moduleIndex = modules.findIndex((module) => module.slug === id)
         const nextModule = moduleIndex >= 0 ? modules[moduleIndex + 1] : undefined
         setNextMission({
@@ -2148,6 +2266,8 @@ function LessonDetail() {
           title: nextModule?.title || 'Browse all learning paths',
         })
         setCountdown(5)
+      } else {
+        cyberSound.playError()
       }
     } catch (reason) { setError(reason.message) }
   }
@@ -2366,12 +2486,13 @@ function LessonDetail() {
                                         type="radio"
                                         name={`q-${lesson.id}-${qi}`}
                                         checked={isSelected}
-                                        onChange={() =>
+                                        onChange={() => {
+                                          cyberSound.playClick()
                                           setAnswers((current) => ({
                                             ...current,
                                             [lesson.id]: { ...current[lesson.id], [qi]: oi },
                                           }))
-                                        }
+                                        }}
                                       />
                                       <span>{option}</span>
                                       {isSelected && <Check size={18} style={{ marginLeft: 'auto', color: 'var(--highlight)', flexShrink: 0 }} />}
